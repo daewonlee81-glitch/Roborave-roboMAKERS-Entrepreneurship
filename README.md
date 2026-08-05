@@ -38,7 +38,14 @@ on robot arrival, and a smartphone backup web app (`http://192.168.4.1`) in case
 | `presentation-scripts/` | Booth demo drama script (KO/EN) and full presentation scripts |
 | `assets/` | Logos and prototype photos |
 | `docs/` | System design document |
+| `development-journal/` | Ideation sheets, the pivot story, and team photos |
 | `tools/` | Document generator scripts (docx-js / pptxgenjs / openpyxl) |
+
+## How We Got Here
+
+GUARDIAN was not our first idea. We started with a pest-control robot, then pivoted
+after a role-play about a grandmother who could not reach her medicine. The whole story,
+in the students' own handwriting, is in [`development-journal/`](development-journal/README.md).
 
 ## Quick Start
 
