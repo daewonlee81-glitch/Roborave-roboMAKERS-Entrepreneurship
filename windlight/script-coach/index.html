@@ -40,6 +40,10 @@ button.primary{background:var(--blue);color:#fff}
 button.rec{background:var(--coral);border-color:var(--coral);color:#fff}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #FFC93C;outline-offset:2px}
 button:disabled{opacity:.45;cursor:default}
+button.mic-on{background:#E6F4EA;border-color:var(--ok);color:var(--ok)}
+button.mic-off{background:#F1F3F6;border-color:#9AA5B5;color:#5B6678}
+button.listen{border-color:var(--coral);color:var(--coral)}
+button.listen.on{background:var(--coral);color:#fff}
 label{display:block;font-size:14px;color:var(--grey);margin:8px 0 4px}
 select,input[type=text],input[type=number]{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:#fff;color:var(--navy)}
 .row{display:flex;gap:8px;align-items:center}
@@ -102,7 +106,8 @@ select,input[type=text],input[type=number]{width:100%;min-height:44px;border:1px
     <div class="scorebar"><i id="bar"></i></div>
     <div class="controls">
       <button class="primary" id="btnStart">▶ 연습 시작</button>
-      <button id="btnMic" disabled>마이크 끄기</button>
+      <button class="listen" id="btnListen" aria-pressed="false">🔊 전문 듣기</button>
+      <button id="btnMic" class="mic-on" aria-pressed="true">🎤 마이크 켜짐</button>
       <button id="btnRetry" disabled>다시 읽기</button>
       <button id="btnPrev" disabled>◀ 이전</button>
       <button id="btnNext" disabled>다음 ▶</button>
@@ -122,7 +127,8 @@ select,input[type=text],input[type=number]{width:100%;min-height:44px;border:1px
     </select>
     <div class="row" style="margin-top:10px"><input type="checkbox" id="chkRec" checked><label for="chkRec" style="margin:0">🎙 연습하는 동안 녹음하기</label></div>
     <div class="row" style="margin-top:6px"><input type="checkbox" id="chkTTS"><label for="chkTTS" style="margin:0">🤖 내 대사가 아닌 줄은 AI가 읽어 주기</label></div>
-    <div id="ttsBox" style="display:none">
+    <div id="ttsBox">
+      <div class="row" style="margin-top:6px"><input type="checkbox" id="chkKo"><label for="chkKo" style="margin:0">🔊 전문 듣기 때 한국어 뜻도 읽어 주기</label></div>
       <label for="rngRate">AI 말 빠르기: <b id="rateVal">0.9</b>배</label>
       <input type="range" id="rngRate" min="0.6" max="1.2" step="0.05" value="0.9" style="width:100%">
       <div id="voiceInfo" style="font-size:12px;color:var(--grey)"></div>
@@ -220,7 +226,7 @@ function align(exp,heard){
 }
 
 // ───── 상태 ─────
-const S={running:false,idx:0,heardFinal:'',heardInterim:'',results:{},startT:0,lineT:0,listening:false,speaking:false,advTimer:null};
+const S={listen:false,listenT:0,micWanted:(()=>{try{return localStorage.getItem('wl_mic')!=='off'}catch(_){return true}})(),running:false,idx:0,heardFinal:'',heardInterim:'',results:{},startT:0,lineT:0,listening:false,speaking:false,advTimer:null};
 let rec=null;
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(!SR){const w=$('warn');w.style.display='block';w.textContent='이 브라우저는 음성 인식을 지원하지 않아요. PC의 Chrome 또는 Edge로 이 파일을 열어 주세요.';$('btnStart').disabled=true}
@@ -235,7 +241,7 @@ function renderList(){
     h+=`<div class="li${i===S.idx?' cur':''}" data-i="${i}" role="button" tabindex="0"><span class="who ${l.who}" style="padding:4px 8px;font-size:12px">${l.who==='All'?'모두':l.who}</span><span>${esc(l.en.replace(/\{\w+\}/g,'[ ]'))}</span><span class="s ${cls}">${sc}</span></div>`;
   });
   $('list').innerHTML=h;
-  const cur=$('list').querySelector('.cur');if(cur&&S.running)cur.scrollIntoView({block:'nearest'});
+  const cur=$('list').querySelector('.cur');if(cur&&(S.running||S.listen))cur.scrollIntoView({block:'nearest'});
 }
 
 function renderLine(){
@@ -252,10 +258,13 @@ function renderLine(){
   $('dir').textContent=l.dir?`(동작: ${l.dir})`:'';
   $('ko').textContent=l.ko;
   const isMine=mine(l);
-  if(!S.running){$('heard').innerHTML='<span class="mic" id="micdot"></span>마이크를 켜고 대사를 읽어 보세요.'}
+  if(S.listen){$('heard').innerHTML=`<span class="mic${S.speaking?' on':''}" id="micdot"></span>🔊 전문 듣기 · <b>${esc(NAMES[l.who])}</b> · 듣고 따라 읽어 보세요.`}
+  else if(!S.running){$('heard').innerHTML=S.micWanted?'<span class="mic" id="micdot"></span>▶ 연습 시작을 누르고 대사를 읽어 보세요. 먼저 들어 보려면 🔊 전문 듣기.':'<span class="mic" id="micdot"></span>🔇 마이크가 꺼져 있어요. 연습을 시작하면 대본을 보며 소리 내어 읽으세요. (점수·녹음 없음)'}
   else if(!isMine){$('heard').innerHTML=`<span class="mic" id="micdot"></span>${esc(NAMES[l.who])}의 대사예요. ${$('chkTTS').checked?(S.speaking?'🤖 AI가 대신 말하고 있어요… 끝나면 내 차례예요.':'🤖 AI가 대신 말해요. [다시 읽기]를 누르면 다시 들려줘요.'):'다음 ▶을 누르세요.'}`}
+  else if(!S.micWanted){$('heard').innerHTML='<span class="mic" id="micdot"></span>🔇 마이크가 꺼져 있어요. 대본을 보며 소리 내어 읽고 다음 ▶을 누르세요.'}
   else{$('heard').innerHTML=`<span class="mic${S.listening?' on':''}" id="micdot"></span><b>들은 말:</b> ${esc(S.heardFinal)} <span style="opacity:.6">${esc(S.heardInterim)}</span>`}
-  $('score').textContent=isMine?a.pct+'%':'—';$('bar').style.width=(isMine?a.pct:0)+'%';
+  const showScore=isMine&&!S.listen&&(S.micWanted||doneLook);
+  $('score').textContent=showScore?a.pct+'%':'—';$('bar').style.width=(showScore?a.pct:0)+'%';
   const missed=exp.disp.filter((d,k)=>a.dHit[k].tot&&a.dHit[k].ok<a.dHit[k].tot);
   $('hint').textContent=isMine&&doneLook&&missed.length?'빠진 말: '+missed.slice(0,6).join(' '):'';
   return {a,missed};
@@ -291,8 +300,8 @@ function pickVoices(){
 }
 if('speechSynthesis' in window){pickVoices();speechSynthesis.onvoiceschanged=pickVoices}
 let ttsId=0;
-function speakLine(){
-  if(!('speechSynthesis' in window))return;
+function speakLine(onDone){
+  if(!('speechSynthesis' in window)){if(onDone)onDone(S.idx);return}
   const idx=S.idx,id=++ttsId,l=SCRIPT[idx];
   stopRec();speechSynthesis.cancel();S.speaking=true;
   const disp=expected(l).disp.map(d=>d==='__WILD__'?'some':d.replace(/^NT\$([\d,]+)/,'$1 N.T. dollars'));
@@ -303,17 +312,29 @@ function speakLine(){
   u.onboundary=e=>{if(id!==ttsId)return;let k=0;while(k+1<starts.length&&starts[k+1]<=e.charIndex)k++;
     $('en').querySelectorAll('span').forEach((sp,n)=>sp.classList.toggle('said',n<=k))};
   const done=()=>{if(id!==ttsId)return;ttsId++;S.speaking=false;
-    if(!S.running||S.idx!==idx)return;
+    if(S.idx!==idx)return;
+    if(onDone){onDone(idx);return}
+    if(!S.running)return;
     if(idx>=SCRIPT.length-1){finish();return}
     go(idx+1);if(mine(SCRIPT[S.idx])&&S.micWanted)startRec()};
   u.onend=done;u.onerror=e=>{if(e.error!=='interrupted'&&e.error!=='canceled')done()};
   renderLine();setTimeout(()=>{if(id===ttsId)speechSynthesis.speak(u)},60);
 }
+// 한국어 뜻 읽기 (전문 듣기)
+function koVoice(){const v=speechSynthesis.getVoices().filter(v=>/^ko/i.test(v.lang));return v.sort((a,b)=>(/natural|online|google/i.test(b.name)?1:0)-(/natural|online|google/i.test(a.name)?1:0))[0]}
+function speakKo(idx,cb){
+  if(!('speechSynthesis' in window)){cb();return}
+  const id=++ttsId;S.speaking=true;
+  const u=new SpeechSynthesisUtterance(SCRIPT[idx].ko);S.utt=u;const v=koVoice();if(v)u.voice=v;u.lang='ko-KR';u.rate=Math.min(1.2,+$('rngRate').value+.1);
+  const done=()=>{if(id!==ttsId)return;ttsId++;S.speaking=false;cb()};
+  u.onend=done;u.onerror=e=>{if(e.error!=='interrupted'&&e.error!=='canceled')done()};
+  setTimeout(()=>{if(id===ttsId)speechSynthesis.speak(u)},60);
+}
 function stopSpeak(){ttsId++;if(S.speaking||speechSynthesis.speaking){speechSynthesis.cancel()}S.speaking=false}
 
 // ───── 음성 인식 ─────
 function startRec(){
-  if(!SR||S.listening||S.speaking)return;
+  if(!SR||S.listening||S.speaking||!S.micWanted||!S.running)return;
   rec=new SR();rec.lang='en-US';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
   rec.onresult=e=>{
     let fin='',inter='';
@@ -328,13 +349,56 @@ function startRec(){
 }
 function stopRec(){if(rec){try{rec.onend=()=>{S.listening=false};rec.stop()}catch(_){}}S.listening=false}
 
+// ───── 전문 듣기 ─────
+function listenStart(from){
+  if(S.running)stop();
+  S.listen=true;S.listenT=Date.now();$('result').style.display='none';setListenUI();
+  listenGo(from>=SCRIPT.length-1?0:from);
+}
+function listenGo(i){
+  if(!S.listen)return;stopSpeak();
+  S.idx=Math.max(0,Math.min(SCRIPT.length-1,i));S.heardFinal='';S.heardInterim='';
+  renderLine();renderList();
+  speakLine(idx=>{
+    const after=()=>{if(!S.listen||S.idx!==idx)return;
+      if(idx>=SCRIPT.length-1){listenEnd(true);return}
+      setTimeout(()=>{if(S.listen&&S.idx===idx)listenGo(idx+1)},SCRIPT[idx+1].sec?900:400)};
+    if($('chkKo').checked)speakKo(idx,after);else after();
+  });
+  renderLine();
+}
+function listenEnd(done){
+  const t=Math.round((Date.now()-S.listenT)/1000);
+  S.listen=false;stopSpeak();setListenUI();
+  if(done){S.idx=0;$('result').style.display='block';
+    $('result').innerHTML=`<h2 style="margin:0 0 8px;font:800 24px 'Baloo 2','Noto Sans KR'">전문 듣기 끝!</h2><p style="margin:0">AI가 전체 대본을 읽는 데 <b>${Math.floor(t/60)}분 ${t%60}초</b> 걸렸어요${$('chkKo').checked?' (한국어 뜻 포함)':''}. 발표 목표는 3분이에요. 이제 ▶ 연습 시작으로 직접 말해 보세요!</p>`}
+  renderLine();renderList();
+}
+function setListenUI(){
+  const b=$('btnListen');b.classList.toggle('on',S.listen);b.setAttribute('aria-pressed',S.listen);
+  b.textContent=S.listen?'■ 듣기 멈춤':'🔊 전문 듣기';
+  ['btnPrev','btnNext'].forEach(x=>$(x).disabled=!(S.listen||S.running));
+  ['btnRetry','btnEnd'].forEach(x=>$(x).disabled=!S.running);
+}
+
+// ───── 마이크 켜기/끄기 ─────
+function setMic(on){
+  S.micWanted=on;try{localStorage.setItem('wl_mic',on?'on':'off')}catch(_){}
+  const b=$('btnMic');b.className=on?'mic-on':'mic-off';b.setAttribute('aria-pressed',on);b.textContent=on?'🎤 마이크 켜짐':'🔇 마이크 꺼짐';
+  if(S.running){
+    if(on){if(mine(SCRIPT[S.idx])&&!S.speaking)startRec();if(R.mr&&R.mr.state==='paused')recResume();else if(!R.mr)recStart()}
+    else{stopRec();recPause()}
+  }
+  renderLine();
+}
+
 // ───── 녹음 ─────
 const R={stream:null,mr:null,chunks:[],t0:0,marks:[],takes:[],n:0,who:'All',seg:null};
 const canRec=!!(navigator.mediaDevices&&window.MediaRecorder);
 if(!canRec){$('chkRec').checked=false;$('chkRec').disabled=true}
 async function recStart(){
   R.mr=null;
-  if(!canRec||!$('chkRec').checked)return;
+  if(!canRec||!$('chkRec').checked||!S.micWanted)return;
   try{
     if(!R.stream||!R.stream.active)R.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
     if(!S.running)return;
@@ -342,19 +406,23 @@ async function recStart(){
     R.mr=new MediaRecorder(R.stream,mime?{mimeType:mime}:undefined);R.chunks=[];R.who=$('selWho').value;
     R.mr.ondataavailable=e=>{if(e.data.size)R.chunks.push(e.data)};
     R.mr.onstop=saveTake;
-    R.mr.start(1000);R.t0=Date.now();R.marks=[{i:S.idx,at:R.t0}];$('recdot').classList.add('on');
+    R.mr.start(1000);R.t0=Date.now();R.pauses=[];R.marks=[{i:S.idx,at:R.t0}];$('recdot').classList.add('on');
   }catch(err){const w=$('warn');w.style.display='block';w.textContent='녹음을 시작하지 못했어요. 마이크 허용을 확인하세요. (음성 확인은 계속돼요)'}
 }
 function recMark(i){if(R.mr&&R.mr.state==='recording')R.marks.push({i,at:Date.now()})}
-function recStop(){$('recdot').classList.remove('on');if(R.mr&&R.mr.state!=='inactive'){R.endAt=Date.now();R.mr.stop()}}
+function recPause(){if(R.mr&&R.mr.state==='recording'){R.mr.pause();R.pauseAt=Date.now();$('recdot').classList.remove('on')}}
+function recResume(){if(R.mr&&R.mr.state==='paused'){R.mr.resume();R.pauses.push([R.pauseAt,Date.now()]);$('recdot').classList.add('on')}}
+function recStop(){$('recdot').classList.remove('on');if(R.mr&&R.mr.state!=='inactive'){R.endAt=Date.now();if(R.mr.state==='paused')R.pauses.push([R.pauseAt,R.endAt]);R.mr.stop()}}
 function saveTake(){
   if(!R.chunks.length)return;
   const blob=new Blob(R.chunks,{type:R.mr.mimeType||'audio/webm'});R.chunks=[];
   const end=R.endAt||Date.now();const d=new Date(R.t0);const pad=x=>String(x).padStart(2,'0');
   const ext=blob.type.includes('mp4')?'m4a':'webm';
   const name=`WindLight_연습_${R.who==='All'?'전체':R.who}_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.${ext}`;
-  const segs=R.marks.map((m,k)=>({i:m.i,s:(m.at-R.t0)/1000,e:((R.marks[k+1]?R.marks[k+1].at:end)-R.t0)/1000}));
-  R.takes.unshift({no:++R.n,url:URL.createObjectURL(blob),name,len:Math.round((end-R.t0)/1000),who:R.who,time:`${pad(d.getHours())}:${pad(d.getMinutes())}`,segs});
+  const mt=at=>(at-R.t0-(R.pauses||[]).reduce((a,[ps,pe])=>a+Math.max(0,Math.min(pe,at)-ps),0))/1000; // 멈춘 시간 빼기
+  const segs=R.marks.map((m,k)=>({i:m.i,s:mt(m.at),e:mt(R.marks[k+1]?R.marks[k+1].at:end)}));
+  const len=mt(end);
+  R.takes.unshift({no:++R.n,url:URL.createObjectURL(blob),name,len:Math.round(len),who:R.who,time:`${pad(d.getHours())}:${pad(d.getMinutes())}`,segs});
   while(R.takes.length>5)URL.revokeObjectURL(R.takes.pop().url);
   renderTakes();
 }
@@ -386,19 +454,19 @@ async function playLine(i,btn){
 }
 
 // ───── 타이머 ─────
-setInterval(()=>{if(!S.running)return;const s=Math.floor((Date.now()-S.startT)/1000);$('timer').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')} / 3:00`;$('timer').classList.toggle('over',s>180)},250);
+setInterval(()=>{if(!S.running&&!S.listen)return;const s=Math.floor((Date.now()-(S.listen?S.listenT:S.startT))/1000);$('timer').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')} / 3:00`;$('timer').classList.toggle('over',s>180)},250);
 
 function start(){
-  S.running=true;S.micWanted=true;S.results={};S.startT=Date.now();$('result').style.display='none';
-  ['btnMic','btnRetry','btnPrev','btnNext','btnEnd'].forEach(b=>$(b).disabled=false);
-  $('btnStart').textContent='■ 처음부터 다시';$('btnMic').textContent='마이크 끄기';
+  if(S.listen)listenEnd(false);
+  S.running=true;S.results={};S.startT=Date.now();$('result').style.display='none';
+  setListenUI();$('btnStart').textContent='■ 처음부터 다시';
   const first=SCRIPT.findIndex(mine);go(0);
   if(mine(SCRIPT[0])||!$('chkTTS').checked)startRec();
   if(first<0)go(0);
   recStart();
 }
-function stop(){S.running=false;S.micWanted=false;stopRec();recStop();if('speechSynthesis' in window)stopSpeak();
-  ['btnMic','btnRetry','btnPrev','btnNext','btnEnd'].forEach(b=>$(b).disabled=true);$('btnStart').textContent='▶ 연습 시작';renderLine()}
+function stop(){S.running=false;stopRec();recStop();if('speechSynthesis' in window)stopSpeak();
+  setListenUI();$('btnStart').textContent='▶ 연습 시작';renderLine()}
 
 function finish(){
   const total=Math.round((Date.now()-S.startT)/1000);stop();
@@ -429,21 +497,24 @@ function countdown(){
   };
   tick();
 }
-$('btnStart').onclick=()=>{if(S.running)stop();countdown()};
-$('btnMic').onclick=()=>{if(S.listening||S.micWanted){S.micWanted=false;stopRec();$('btnMic').textContent='마이크 켜기'}else{S.micWanted=true;startRec();$('btnMic').textContent='마이크 끄기'}renderLine()};
+$('btnStart').onclick=()=>{if(S.listen)listenEnd(false);if(S.running)stop();countdown()};
+$('btnListen').onclick=()=>{if(S.listen)listenEnd(false);else listenStart(S.idx)};
+$('btnMic').onclick=()=>setMic(!S.micWanted);
 $('btnRetry').onclick=()=>{if(!mine(SCRIPT[S.idx])){if($('chkTTS').checked)speakLine();return}record();S.heardFinal='';S.heardInterim='';S.lineT=Date.now();renderLine()};
-$('btnNext').onclick=()=>next();
-$('btnPrev').onclick=()=>go(S.idx-1);
+$('btnNext').onclick=()=>{if(S.listen)listenGo(S.idx+1);else next()};
+$('btnPrev').onclick=()=>{if(S.listen)listenGo(S.idx-1);else go(S.idx-1)};
 $('btnEnd').onclick=()=>{record();finish()};
 $('rngPass').oninput=()=>{$('passVal').textContent=$('rngPass').value;renderList()};
-const syncTTS=()=>{$('ttsBox').style.display=$('chkTTS').checked?'block':'none'};
+const syncTTS=()=>{};
 $('chkTTS').onchange=()=>{syncTTS();if(S.running&&!mine(SCRIPT[S.idx])){if($('chkTTS').checked)speakLine();else{stopSpeak();renderLine()}}};
 $('rngRate').oninput=()=>{$('rateVal').textContent=(+$('rngRate').value).toFixed(2).replace(/0$/,'')};
 $('selWho').onchange=()=>{$('chkTTS').checked=$('selWho').value!=='All';syncTTS();if(S.running)stop();renderLine();renderList()};
-$('list').onclick=e=>{const d=e.target.closest('.li');if(d){record();go(+d.dataset.i);if(S.running&&mine(SCRIPT[S.idx]))startRec()}};
+$('list').onclick=e=>{const d=e.target.closest('.li');if(d&&S.listen){listenGo(+d.dataset.i);return}if(d){record();go(+d.dataset.i);if(S.running&&mine(SCRIPT[S.idx]))startRec()}};
 $('list').onkeydown=e=>{if(e.key==='Enter'){const d=e.target.closest('.li');if(d)go(+d.dataset.i)}};
-document.addEventListener('keydown',e=>{if(!S.running||e.target.matches('input,select'))return;if(e.key==='ArrowRight')next();if(e.key==='ArrowLeft')go(S.idx-1)});
-renderLine();renderList();
+document.addEventListener('keydown',e=>{if(e.target.matches('input,select'))return;
+  if(S.listen){if(e.key==='ArrowRight')listenGo(S.idx+1);if(e.key==='ArrowLeft')listenGo(S.idx-1);return}
+  if(!S.running)return;if(e.key==='ArrowRight')next();if(e.key==='ArrowLeft')go(S.idx-1)});
+setMic(S.micWanted);setListenUI();renderLine();renderList();
 }
 </script>
 </body>
