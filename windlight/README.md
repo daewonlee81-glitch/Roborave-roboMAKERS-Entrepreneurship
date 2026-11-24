@@ -32,6 +32,6 @@ for the RoboRAVE Taiwan Open 2026 Entrepreneurship Challenge.
 
 | | Name | Role |
 |---|---|---|
-| A | Rael Park (박라엘) | Chairman |
+| A | Lael Park (박라엘 · PARK LAEL) | Chairman |
 | B | Jiseok Kang (강지석) | President |
 | C | Jeonghyun Park (박정현) | Vice President |

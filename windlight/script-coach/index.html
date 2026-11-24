@@ -145,7 +145,7 @@ select,input[type=text],input[type=number]{width:100%;min-height:44px;border:1px
 {
 // ───── 대본 (괄호 속 동작은 dir, {키}는 숫자 칸) ─────
 const SCRIPT=[
- ['1. 인사와 대만 이야기','A',"Hello! We are RoboMakers, a company from Korea. I am Rael Park, the chairman. This is Jiseok Kang, our president. And this is Jeonghyun Park, our vice president.",'','안녕하세요! 저희는 한국에서 온 로보메이커스사입니다. 저는 회장 박라엘이에요. 이 친구는 사장 강지석, 이 친구는 부사장 박정현이에요.'],
+ ['1. 인사와 대만 이야기','A',"Hello! We are RoboMakers, a company from Korea. I am Lael Park, the chairman. This is Jiseok Kang, our president. And this is Jeonghyun Park, our vice president.",'','안녕하세요! 저희는 한국에서 온 로보메이커스사입니다. 저는 회장 박라엘이에요. 이 친구는 사장 강지석, 이 친구는 부사장 박정현이에요.'],
  ['','A','Taiwan is the bicycle capital of the world. People call Taiwan the "Bicycle Kingdom."','',"대만은 세계 자전거의 수도예요. 사람들은 대만을 '자전거 왕국'이라고 불러요."],
  ['','A','The biggest bike company in the world is from Taiwan. So we brought our bike idea to Taiwan!','','세계에서 가장 큰 자전거 회사도 대만 회사예요. 그래서 저희는 자전거를 위한 발명품을 들고 대만에 왔어요!'],
  ['2. 우리가 본 문제','B','I ride my bike to school. But sometimes I feel scared.','','저는 자전거를 타고 학교에 가요. 그런데 무서울 때가 있어요.'],
@@ -201,7 +201,7 @@ function numify(ts){
   return out.map(t=>t.replace(/^dollar$/,'dollars').replace(/^volt$/,'volts').replace(/^windlights?$/,'windlight').replace(/^robomaker$/,'robomakers'));
 }
 // 이름·고유명사는 인식기가 다르게 적어도 통과
-const ALIAS={nt:['nt','n','and','in','anti','end','empty','t','nts','ntd'],windlight:['wind','light','windlights','windlight'],robomakers:['robot','makers','robomakers','robo','maker'],rael:['rael','rail','real','ray','raelle','riel','rayel'],jiseok:['jiseok','jisuk','jesuk','g','jisok','cheesecake','shisuk'],jeonghyun:['jeonghyun','junghyun','jung','hyun','young','junghun','john'],kang:['kang','kong','khan','con','king'],park:['park','pak','parks']};
+const ALIAS={nt:['nt','n','and','in','anti','end','empty','t','nts','ntd'],windlight:['wind','light','windlights','windlight'],robomakers:['robot','makers','robomakers','robo','maker'],lael:['lael','rael','layel','lail','lale','lay','lel','laelle','layla','real','rail','ray','riel','yale','l'],jiseok:['jiseok','jisuk','jesuk','g','jisok','cheesecake','shisuk'],jeonghyun:['jeonghyun','junghyun','jung','hyun','young','junghun','john'],kang:['kang','kong','khan','con','king'],park:['park','pak','parks']};
 function same(e,h){if(e===h)return true;const a=ALIAS[e];return !!(a&&a.includes(h))}
 
 function expected(line){
