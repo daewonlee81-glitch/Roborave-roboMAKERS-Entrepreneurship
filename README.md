@@ -40,6 +40,7 @@ on robot arrival, and a smartphone backup web app (`http://192.168.4.1`) in case
 | `docs/` | System design document |
 | `development-journal/` | Ideation sheets, the pivot story, and team photos |
 | `tools/` | Document generator scripts (docx-js / pptxgenjs / openpyxl) |
+| `windlight/` | **WindLight** (RoboRAVE Taiwan Open 2026) — [script practice app](https://daewonlee81-glitch.github.io/Roborave-roboMAKERS-Entrepreneurship/windlight/script-coach/) |
 
 ## How We Got Here
 

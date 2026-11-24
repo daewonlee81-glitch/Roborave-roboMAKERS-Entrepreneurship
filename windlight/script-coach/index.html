@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WindLight 대본 연습</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Noto+Sans+KR:wght@400;700&display=swap">
+<style>
+:root{--blue:#2E6ABF;--blue-l:#EAF1FB;--coral:#E8452C;--navy:#1B2A4A;--grey:#5A6475;--ok:#1E8E4E;--ok-l:#E3F5EA;--bad:#C62E1A;--bad-l:#FDE7E3;--line:#D5DCE6}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:#F6F8FB;color:var(--navy);font:16px/1.55 'Noto Sans KR',system-ui,sans-serif}
+header{background:var(--blue);color:#fff;padding:16px max(4vw,16px);display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;justify-content:space-between}
+header h1{margin:0;font:800 28px/1.1 'Baloo 2','Noto Sans KR',sans-serif}
+header .sub{font-size:14px;opacity:.9}
+.timer{font:800 32px/1 'Baloo 2',monospace;background:#fff;color:var(--navy);border-radius:14px;padding:8px 16px}
+.timer.over{color:var(--bad)}
+main{max-width:1180px;margin:0 auto;padding:20px max(3vw,14px);display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px}
+@media(max-width:900px){main{grid-template-columns:minmax(0,1fr)}}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px}
+.stage{min-height:330px;display:flex;flex-direction:column;gap:12px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px;color:var(--grey)}
+.who{font:800 15px/1 'Baloo 2',sans-serif;color:#fff;background:var(--navy);border-radius:999px;padding:6px 12px}
+.who.A{background:var(--blue)}.who.B{background:var(--coral)}.who.C{background:#6B4FBB}.who.All{background:var(--navy)}
+.en{font:600 30px/1.45 'Baloo 2','Noto Sans KR',sans-serif;margin:0}
+.en span{border-radius:6px;padding:0 2px;transition:background .2s,color .2s}
+.en .hit{background:var(--ok-l);color:var(--ok)}
+.en .miss{background:var(--bad-l);color:var(--bad);text-decoration:underline wavy}
+.en .wild{color:var(--grey);border:1px dashed var(--grey)}
+.ko{font-size:17px;color:var(--grey);margin:0}
+.dir{font-size:15px;color:var(--coral);font-weight:700}
+.heard{font-size:15px;background:var(--blue-l);border-radius:12px;padding:10px 12px;min-height:46px}
+.heard b{color:var(--blue)}
+.scorebar{height:14px;background:#EEF1F5;border-radius:999px;overflow:hidden}
+.scorebar i{display:block;height:100%;width:0;background:var(--ok);transition:width .3s}
+.big{font:800 22px/1 'Baloo 2',sans-serif}
+.controls{display:flex;flex-wrap:wrap;gap:10px}
+button,select,input{font:inherit;font-size:16px}
+button{min-height:46px;padding:0 18px;border-radius:12px;border:2px solid var(--blue);background:#fff;color:var(--blue);font-weight:700;cursor:pointer}
+button.primary{background:var(--blue);color:#fff}
+button.rec{background:var(--coral);border-color:var(--coral);color:#fff}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #FFC93C;outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+label{display:block;font-size:14px;color:var(--grey);margin:8px 0 4px}
+select,input[type=text],input[type=number]{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:0 10px;background:#fff;color:var(--navy)}
+.row{display:flex;gap:8px;align-items:center}
+.row input[type=checkbox]{width:22px;height:22px}
+.side h2{margin:0 0 6px;font:800 20px/1.2 'Baloo 2','Noto Sans KR',sans-serif}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 10px}
+.list{margin-top:16px;max-height:420px;overflow:auto;border-top:1px solid var(--line)}
+.li{display:grid;grid-template-columns:34px minmax(0,1fr) 54px;gap:8px;align-items:center;padding:8px 4px;border-bottom:1px solid #EEF1F5;font-size:14px;cursor:pointer}
+.li.cur{background:var(--blue-l)}
+.li .s{text-align:right;font-weight:700}
+.li .s.good{color:var(--ok)}.li .s.weak{color:var(--bad)}
+.sec{font-weight:700;color:var(--blue);padding:10px 4px 4px;font-size:13px}
+.warn{background:var(--bad-l);color:var(--bad);border-radius:12px;padding:12px;font-weight:700;display:none}
+.result{display:none}
+.result table{width:100%;border-collapse:collapse;font-size:14px}
+.result th,.result td{border-bottom:1px solid var(--line);padding:6px;text-align:left}
+.result td.n{text-align:right}
+.pill{display:inline-block;background:var(--bad-l);color:var(--bad);border-radius:999px;padding:2px 10px;margin:2px;font-size:14px}
+.mic{display:inline-block;width:12px;height:12px;border-radius:6px;background:#bbb;margin-right:6px;vertical-align:middle}
+.mic.on{background:var(--coral);animation:p 1s infinite}
+@keyframes p{50%{opacity:.3}}
+.count{position:fixed;inset:0;background:rgba(27,42,74,.88);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:9;color:#fff}
+.count.show{display:flex}
+.count b{font:800 min(40vw,260px)/1 'Baloo 2',sans-serif;color:#FFC93C}
+.count span{font-size:22px;font-weight:700}
+.count b.pop{animation:pop .9s ease-out}
+@keyframes pop{from{transform:scale(1.4);opacity:.2}to{transform:scale(1);opacity:1}}
+.recdot{display:none;align-items:center;gap:6px;font-weight:800;font-size:15px;background:#fff;color:var(--bad);border-radius:999px;padding:4px 12px}
+.recdot.on{display:inline-flex}.recdot i{width:10px;height:10px;border-radius:5px;background:var(--bad);animation:p 1s infinite}
+.result td.n{white-space:nowrap}
+.en span.said{color:var(--blue);text-decoration:underline 3px var(--blue);text-underline-offset:6px}
+.take{border:1px solid #E3E8F0;border-radius:12px;padding:10px;margin-top:8px;font-size:14px}
+.take audio{width:100%;margin:6px 0 4px;height:36px}
+.take .row{justify-content:space-between;flex-wrap:wrap}
+.take a,.lbtn{color:var(--blue);font-weight:700}
+.lbtn{white-space:nowrap;min-height:32px;padding:0 10px;border-width:1.5px;border-radius:8px;font-size:13px}
+.lbtn.playing{background:var(--blue);color:#fff}
+@media (prefers-reduced-motion:reduce){.recdot i{animation:none}.count b.pop{animation:none}.mic.on{animation:none}.scorebar i,.en span{transition:none}}
+</style>
+</head>
+<body>
+<div class="count" id="count" role="status" aria-live="assertive"><b id="countNum">3</b><span id="countMsg">준비하세요!</span></div>
+<header>
+  <div>
+    <h1>WindLight 대본 연습</h1>
+    <div class="sub">대사를 듣고 맞게 말했는지 확인해요 · 다음 대사는 [다음 ▶] 버튼이나 → 키 · RoboMakers</div>
+  </div>
+  <div class="row" style="gap:12px"><span class="recdot" id="recdot"><i></i>녹음 중</span><div class="timer" id="timer" aria-live="off">0:00 / 3:00</div></div>
+</header>
+
+<main>
+  <section class="card stage" aria-label="지금 연습할 대사">
+    <div class="warn" id="warn"></div>
+    <div class="meta"><span class="who" id="who">A</span><span id="pos">1 / 1</span><span id="secname"></span></div>
+    <p class="en" id="en"></p>
+    <div class="dir" id="dir"></div>
+    <p class="ko" id="ko"></p>
+    <div class="heard" id="heard" aria-live="polite"><span class="mic" id="micdot"></span>마이크를 켜고 대사를 읽어 보세요.</div>
+    <div class="row" style="justify-content:space-between"><span class="big" id="score">0%</span><span id="hint" style="font-size:14px;color:var(--grey)"></span></div>
+    <div class="scorebar"><i id="bar"></i></div>
+    <div class="controls">
+      <button class="primary" id="btnStart">▶ 연습 시작</button>
+      <button id="btnMic" disabled>마이크 끄기</button>
+      <button id="btnRetry" disabled>다시 읽기</button>
+      <button id="btnPrev" disabled>◀ 이전</button>
+      <button id="btnNext" disabled>다음 ▶</button>
+      <button id="btnEnd" disabled>끝내고 결과 보기</button>
+    </div>
+    <div class="result card" id="result" aria-live="polite"></div>
+  </section>
+
+  <aside class="card side">
+    <h2>연습 설정</h2>
+    <label for="selWho">누가 연습하나요?</label>
+    <select id="selWho">
+      <option value="All">전체 대사 (혼자 다 읽기)</option>
+      <option value="A">A · 박라엘 (회장)</option>
+      <option value="B">B · 강지석 (사장)</option>
+      <option value="C">C · 박정현 (부사장)</option>
+    </select>
+    <div class="row" style="margin-top:10px"><input type="checkbox" id="chkRec" checked><label for="chkRec" style="margin:0">🎙 연습하는 동안 녹음하기</label></div>
+    <div class="row" style="margin-top:6px"><input type="checkbox" id="chkTTS"><label for="chkTTS" style="margin:0">🤖 내 대사가 아닌 줄은 AI가 읽어 주기</label></div>
+    <div id="ttsBox" style="display:none">
+      <label for="rngRate">AI 말 빠르기: <b id="rateVal">0.9</b>배</label>
+      <input type="range" id="rngRate" min="0.6" max="1.2" step="0.05" value="0.9" style="width:100%">
+      <div id="voiceInfo" style="font-size:12px;color:var(--grey)"></div>
+    </div>
+    <label for="rngPass">통과 기준: <b id="passVal">80</b>% 이상이면 통과 (초록)</label>
+    <input type="range" id="rngPass" min="50" max="100" step="5" value="80" style="width:100%">
+    <div class="list" id="list" aria-label="대사 목록"></div>
+    <h2 style="margin-top:18px">내 녹음</h2>
+    <div id="takes" style="font-size:14px;color:var(--grey)">연습을 시작하면 녹음이 여기에 쌓여요.</div>
+  </aside>
+</main>
+
+<script>
+{
+// ───── 대본 (괄호 속 동작은 dir, {키}는 숫자 칸) ─────
+const SCRIPT=[
+ ['1. 인사와 대만 이야기','A',"Hello! We are RoboMakers, a company from Korea. I am Rael Park, the chairman. This is Jiseok Kang, our president. And this is Jeonghyun Park, our vice president.",'','안녕하세요! 저희는 한국에서 온 로보메이커스사입니다. 저는 회장 박라엘이에요. 이 친구는 사장 강지석, 이 친구는 부사장 박정현이에요.'],
+ ['','A','Taiwan is the bicycle capital of the world. People call Taiwan the "Bicycle Kingdom."','',"대만은 세계 자전거의 수도예요. 사람들은 대만을 '자전거 왕국'이라고 불러요."],
+ ['','A','The biggest bike company in the world is from Taiwan. So we brought our bike idea to Taiwan!','','세계에서 가장 큰 자전거 회사도 대만 회사예요. 그래서 저희는 자전거를 위한 발명품을 들고 대만에 왔어요!'],
+ ['2. 우리가 본 문제','B','I ride my bike to school. But sometimes I feel scared.','','저는 자전거를 타고 학교에 가요. 그런데 무서울 때가 있어요.'],
+ ['','B','First, when I turn, I must take one hand off. With one hand, I may fall.','','첫째, 길을 돌 때 한 손을 떼서 신호를 해야 해요. 한 손으로 타면 넘어질 것 같아요.'],
+ ['','B','Second, at night, cars behind me cannot see me well.','','둘째, 밤에는 뒤에 오는 차가 저를 잘 못 봐요.'],
+ ['','B','Third, I forget to turn on my light. I forget to charge it, too.','','셋째, 불을 켜는 것도, 충전하는 것도 자꾸 잊어버려요.'],
+ ['','B','We asked 20 friends. None of them used hand signals.','','친구 20명에게 물어봤어요. 손으로 신호를 하는 친구는 아무도 없었어요.'],
+ ['3. 윈드라이트 시연','C','So we made WindLight! It is a small box. You wear it on top of your helmet.','','그래서 저희가 윈드라이트를 만들었어요! 지금 쓰는 헬멧 위에 올려 쓰는 작은 상자예요.'],
+ ['','C','Look! I tilt my head to the left. The left light blinks orange!','tilt your head to the left · 고개를 왼쪽으로 기울인다','보세요! 고개를 왼쪽으로 기울일게요. 왼쪽 불이 주황색으로 깜빡여요!'],
+ ['','C','The right side works, too. My hands stay on the bike.','','오른쪽도 똑같아요. 손은 계속 핸들을 잡고 있어요.'],
+ ['','C','Now I cover the light sensor. It is dark, like night. The red light turns on by itself!','cover the sensor and count to three · 센서를 가리고 셋을 센다','이번에는 빛 센서를 가려 볼게요. 밤처럼 어두워지면 빨간 불이 저절로 켜져요!'],
+ ['','C','When it is bright, it turns off.','','밝아지면 다시 꺼져요.'],
+ ['','C','Last, the wind! The small fan spins and makes power.','turn on the fan · 선풍기를 켠다','마지막은 바람이에요! 작은 날개가 돌면 전기가 생겨요.'],
+ ['','C','The power fills the battery, little by little. A small green light means "charging."','','이 전기가 배터리를 조금씩 채워 줘요. 초록 불이 잠깐 켜지면 충전 중이라는 뜻이에요.'],
+ ['4. 실험 결과','A','We tested soft wind and strong wind. Soft wind made 0.7 volts. Strong wind made 1.2 volts.','','약한 바람과 센 바람으로 실험했어요. 약한 바람에서는 0.7V, 센 바람에서는 1.2V가 나왔어요.'],
+ ['','A','Wind cannot fill the battery all the way. Wind is a helper.','','바람만으로 배터리를 다 채울 수는 없어요. 그래서 바람은 도와주는 충전이에요.'],
+ ['5. 가격과 판매','B','You do not need a new helmet. Just wear WindLight on top of your helmet. So it is cheap!','','새 헬멧을 살 필요가 없어요. 지금 쓰는 헬멧 위에 올려 쓰기만 하면 돼요. 그래서 값이 싸요!'],
+ ['','B','The parts cost NT$615. We want to sell it for NT$1300.','','부품값은 615대만달러이고, 저희는 1300대만달러에 팔고 싶어요.'],
+ ['','B','You can buy it at bike shops, school shops, and online.','','자전거 가게, 학교 앞 문구점, 인터넷에서 살 수 있어요.'],
+ ['6. 다음 계획과 끝인사','C','Next, we will make it smaller. We will make it safe in the rain. And we will get more power from the wind.','','다음에는 더 작게, 비가 와도 괜찮게, 바람으로 전기를 더 많이 만들 거예요.'],
+ ['','All','Tilt your head, turn on safety! WindLight! Thank you!','','고개만 기울이면, 안전이 켜져요! 윈드라이트! 감사합니다!']
+].map((r,i)=>({id:i,sec:r[0],who:r[1],en:r[2],dir:r[3],ko:r[4]}));
+let sec='';SCRIPT.forEach(l=>{if(l.sec)sec=l.sec;l.secName=sec});
+
+const NAMES={A:'A · 박라엘',B:'B · 강지석',C:'C · 박정현',All:'모두 함께'};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ───── 숫자 말 → 숫자 ─────
+const ONES={zero:0,oh:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19};
+const TENS={twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
+function words(s){
+  return s.toLowerCase().replace(/[’']/g,'').replace(/(\d),(?=\d{3})/g,'$1').replace(/\bnt\s*\$\s*/g,' ').replace(/(^|[^\d])\.(\d)/g,'$10.$2').replace(/(\d)\.(\d)/g,'$1point$2').replace(/[^a-z0-9\s-]/g,' ').replace(/-/g,' ').split(/\s+/).filter(Boolean);
+}
+function numify(ts){
+  const out=[];
+  for(let i=0;i<ts.length;i++){
+    const t=ts[i];
+    if(t==='point'&&ONES[ts[i+1]]<10&&!/^\d+$/.test(out[out.length-1]||'')){out.push('0point'+ONES[ts[i+1]]);i++;continue}
+    if(!(t in ONES||t in TENS)){out.push(t.replace(/^(\d+)point$/,'$1'));continue}
+    let total=0,cur=0,last=null,j=i;
+    for(;j<ts.length;j++){const w=ts[j];
+      if(w in ONES&&(last===null||last==='hundred'||last==='thousand'||(last==='tens'&&ONES[w]<10))){cur+=ONES[w];last=ONES[w]<10||last==='tens'?'ones':'teen'}
+      else if(w in TENS&&(last===null||last==='hundred'||last==='thousand')){cur+=TENS[w];last='tens'}
+      else if(w==='hundred'&&(last==='ones'||last==='teen'||last==='tens')){cur*=100;last='hundred'}
+      else if(w==='thousand'&&last&&last!=='thousand'){total+=cur*1000;cur=0;last='thousand'}
+      else if(w==='and'&&(last==='hundred'||last==='thousand')&&(ts[j+1] in ONES||ts[j+1] in TENS)){}
+      else break}
+    let v=String(total+cur);
+    if(ts[j]==='point'&&ONES[ts[j+1]]<10){v+='point'+ONES[ts[j+1]];j+=2}
+    out.push(v);i=j-1;
+  }
+  return out.map(t=>t.replace(/^dollar$/,'dollars').replace(/^volt$/,'volts').replace(/^windlights?$/,'windlight').replace(/^robomaker$/,'robomakers'));
+}
+// 이름·고유명사는 인식기가 다르게 적어도 통과
+const ALIAS={nt:['nt','n','and','in','anti','end','empty','t','nts','ntd'],windlight:['wind','light','windlights','windlight'],robomakers:['robot','makers','robomakers','robo','maker'],rael:['rael','rail','real','ray','raelle','riel','rayel'],jiseok:['jiseok','jisuk','jesuk','g','jisok','cheesecake','shisuk'],jeonghyun:['jeonghyun','junghyun','jung','hyun','young','junghun','john'],kang:['kang','kong','khan','con','king'],park:['park','pak','parks']};
+function same(e,h){if(e===h)return true;const a=ALIAS[e];return !!(a&&a.includes(h))}
+
+function expected(line){
+  const v=vals();let raw=line.en.replace(/\{(\w+)\}/g,(m,k)=>v[k]?` ${v[k]} `:' __WILD__ ');
+  const disp=raw.split(/\s+/).filter(Boolean);
+  const toks=disp.map(d=>d==='__WILD__'?['*']:numify(words(d)));
+  return {disp,toks};
+}
+function vals(){return {}}
+
+// LCS 정렬: 기대 단어 중 들은 것 표시
+function align(exp,heard){
+  const E=[];exp.toks.forEach((g,di)=>g.forEach(t=>E.push({t,di})));
+  const H=heard,n=E.length,m=H.length,dp=Array.from({length:n+1},()=>new Int16Array(m+1));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)dp[i][j]=(E[i].t==='*'||same(E[i].t,H[j]))?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  const hit=new Array(n).fill(false);let i=0,j=0;
+  while(i<n&&j<m){if((E[i].t==='*'||same(E[i].t,H[j]))&&dp[i][j]===dp[i+1][j+1]+1){hit[i]=true;i++;j++}else if(dp[i+1][j]>=dp[i][j+1])i++;else j++}
+  const dHit=exp.disp.map(()=>({tot:0,ok:0,wild:false}));
+  E.forEach((e,k)=>{const d=dHit[e.di];if(e.t==='*'){d.wild=true;return}d.tot++;if(hit[k])d.ok++});
+  const tot=dHit.reduce((a,d)=>a+d.tot,0),ok=dHit.reduce((a,d)=>a+d.ok,0);
+  return {dHit,pct:tot?Math.round(ok/tot*100):100};
+}
+
+// ───── 상태 ─────
+const S={running:false,idx:0,heardFinal:'',heardInterim:'',results:{},startT:0,lineT:0,listening:false,speaking:false,advTimer:null};
+let rec=null;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){const w=$('warn');w.style.display='block';w.textContent='이 브라우저는 음성 인식을 지원하지 않아요. PC의 Chrome 또는 Edge로 이 파일을 열어 주세요.';$('btnStart').disabled=true}
+
+function mine(l){const w=$('selWho').value;return w==='All'||l.who===w||l.who==='All'}
+
+function renderList(){
+  let h='',last='';
+  SCRIPT.forEach((l,i)=>{
+    if(l.secName!==last){last=l.secName;h+=`<div class="sec">${esc(last)}</div>`}
+    const r=S.results[i];const sc=r?`${r.best}%`:'';const cls=r?(r.best>=+$('rngPass').value?'good':'weak'):'';
+    h+=`<div class="li${i===S.idx?' cur':''}" data-i="${i}" role="button" tabindex="0"><span class="who ${l.who}" style="padding:4px 8px;font-size:12px">${l.who==='All'?'모두':l.who}</span><span>${esc(l.en.replace(/\{\w+\}/g,'[ ]'))}</span><span class="s ${cls}">${sc}</span></div>`;
+  });
+  $('list').innerHTML=h;
+  const cur=$('list').querySelector('.cur');if(cur&&S.running)cur.scrollIntoView({block:'nearest'});
+}
+
+function renderLine(){
+  const l=SCRIPT[S.idx];const exp=expected(l);
+  const heard=numify(words(S.heardFinal+' '+S.heardInterim));
+  const a=align(exp,heard);
+  $('who').className='who '+l.who;$('who').textContent=NAMES[l.who];
+  $('pos').textContent=`${S.idx+1} / ${SCRIPT.length}`;$('secname').textContent=l.secName;
+  const doneLook=S.heardFinal.trim().length>0;
+  $('en').innerHTML=exp.disp.map((d,k)=>{const x=a.dHit[k];
+    if(x.wild)return `<span class="wild">[ ]</span>`;
+    const cls=x.tot&&x.ok===x.tot?'hit':(doneLook&&heard.length?'miss':'');
+    return `<span class="${cls}">${esc(d)}</span>`}).join(' ');
+  $('dir').textContent=l.dir?`(동작: ${l.dir})`:'';
+  $('ko').textContent=l.ko;
+  const isMine=mine(l);
+  if(!S.running){$('heard').innerHTML='<span class="mic" id="micdot"></span>마이크를 켜고 대사를 읽어 보세요.'}
+  else if(!isMine){$('heard').innerHTML=`<span class="mic" id="micdot"></span>${esc(NAMES[l.who])}의 대사예요. ${$('chkTTS').checked?(S.speaking?'🤖 AI가 대신 말하고 있어요… 끝나면 내 차례예요.':'🤖 AI가 대신 말해요. [다시 읽기]를 누르면 다시 들려줘요.'):'다음 ▶을 누르세요.'}`}
+  else{$('heard').innerHTML=`<span class="mic${S.listening?' on':''}" id="micdot"></span><b>들은 말:</b> ${esc(S.heardFinal)} <span style="opacity:.6">${esc(S.heardInterim)}</span>`}
+  $('score').textContent=isMine?a.pct+'%':'—';$('bar').style.width=(isMine?a.pct:0)+'%';
+  const missed=exp.disp.filter((d,k)=>a.dHit[k].tot&&a.dHit[k].ok<a.dHit[k].tot);
+  $('hint').textContent=isMine&&doneLook&&missed.length?'빠진 말: '+missed.slice(0,6).join(' '):'';
+  return {a,missed};
+}
+
+function record(){
+  const l=SCRIPT[S.idx];if(!mine(l)||!S.heardFinal.trim())return;
+  const {a,missed}=renderLine();const r=S.results[S.idx]||{best:0,tries:0,time:0,missed:[]};
+  r.tries++;r.time+=(Date.now()-S.lineT)/1000;if(a.pct>=r.best){r.best=a.pct;r.missed=missed}
+  S.results[S.idx]=r;
+}
+
+function go(i){
+  clearTimeout(S.advTimer);stopSpeak();
+  S.idx=Math.max(0,Math.min(SCRIPT.length-1,i));S.heardFinal='';S.heardInterim='';S.lineT=Date.now();recMark(S.idx);
+  renderLine();renderList();
+  if(S.running&&!mine(SCRIPT[S.idx])&&$('chkTTS').checked)speakLine();
+  else if(S.running&&mine(SCRIPT[S.idx])&&S.micWanted&&!S.listening)startRec();
+}
+
+function next(){record();if(S.idx>=SCRIPT.length-1){finish();return}go(S.idx+1)}
+
+// AI 목소리: 사람마다 다른 영어 목소리 (Edge의 Natural 목소리가 가장 자연스러움)
+const VO={};
+function pickVoices(){
+  if(!('speechSynthesis' in window))return;
+  const all=speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang));if(!all.length)return;
+  const rank=v=>(/natural/i.test(v.name)?0:/online|google/i.test(v.name)?1:2)+(/en[-_]us/i.test(v.lang)?0:.5)+(/ana\b/i.test(v.name)?-.6:0);
+  const list=[...all].sort((a,b)=>rank(a)-rank(b));
+  const pitch={A:1.15,B:1.0,C:1.3,All:1.1};
+  ['A','B','C','All'].forEach((w,k)=>{VO[w]={voice:list[k%list.length],pitch:pitch[w]}});
+  $('voiceInfo').textContent='목소리 · '+['A','B','C'].map(w=>`${w}: ${VO[w].voice.name.replace(/Microsoft |Online |\(Natural\)| - English.*$/g,'').trim()}`).join(' · ');
+}
+if('speechSynthesis' in window){pickVoices();speechSynthesis.onvoiceschanged=pickVoices}
+let ttsId=0;
+function speakLine(){
+  if(!('speechSynthesis' in window))return;
+  const idx=S.idx,id=++ttsId,l=SCRIPT[idx];
+  stopRec();speechSynthesis.cancel();S.speaking=true;
+  const disp=expected(l).disp.map(d=>d==='__WILD__'?'some':d.replace(/^NT\$([\d,]+)/,'$1 N.T. dollars'));
+  const text=disp.join(' ');const starts=[];let c=0;disp.forEach(d=>{starts.push(c);c+=d.length+1});
+  const u=new SpeechSynthesisUtterance(text);S.utt=u;
+  const vo=VO[l.who]||VO.A;if(vo&&vo.voice){u.voice=vo.voice;u.lang=vo.voice.lang;u.pitch=vo.pitch}else u.lang='en-US';
+  u.rate=+$('rngRate').value;
+  u.onboundary=e=>{if(id!==ttsId)return;let k=0;while(k+1<starts.length&&starts[k+1]<=e.charIndex)k++;
+    $('en').querySelectorAll('span').forEach((sp,n)=>sp.classList.toggle('said',n<=k))};
+  const done=()=>{if(id!==ttsId)return;ttsId++;S.speaking=false;
+    if(!S.running||S.idx!==idx)return;
+    if(idx>=SCRIPT.length-1){finish();return}
+    go(idx+1);if(mine(SCRIPT[S.idx])&&S.micWanted)startRec()};
+  u.onend=done;u.onerror=e=>{if(e.error!=='interrupted'&&e.error!=='canceled')done()};
+  renderLine();setTimeout(()=>{if(id===ttsId)speechSynthesis.speak(u)},60);
+}
+function stopSpeak(){ttsId++;if(S.speaking||speechSynthesis.speaking){speechSynthesis.cancel()}S.speaking=false}
+
+// ───── 음성 인식 ─────
+function startRec(){
+  if(!SR||S.listening||S.speaking)return;
+  rec=new SR();rec.lang='en-US';rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
+  rec.onresult=e=>{
+    let fin='',inter='';
+    for(let k=e.resultIndex;k<e.results.length;k++){const t=e.results[k][0].transcript;if(e.results[k].isFinal)fin+=t+' ';else inter+=t}
+    if(!mine(SCRIPT[S.idx]))return;
+    if(fin)S.heardFinal+=fin;S.heardInterim=inter;
+    renderLine();
+  };
+  rec.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){const w=$('warn');w.style.display='block';w.textContent='마이크 사용이 막혀 있어요. 주소창 옆 자물쇠 아이콘에서 마이크를 "허용"으로 바꾼 뒤 다시 시작하세요.';stop()}};
+  rec.onend=()=>{S.listening=false;$('micdot')&&$('micdot').classList.remove('on');if(S.running&&!S.speaking&&S.micWanted)setTimeout(startRec,250)};
+  try{rec.start();S.listening=true;renderLine()}catch(_){}
+}
+function stopRec(){if(rec){try{rec.onend=()=>{S.listening=false};rec.stop()}catch(_){}}S.listening=false}
+
+// ───── 녹음 ─────
+const R={stream:null,mr:null,chunks:[],t0:0,marks:[],takes:[],n:0,who:'All',seg:null};
+const canRec=!!(navigator.mediaDevices&&window.MediaRecorder);
+if(!canRec){$('chkRec').checked=false;$('chkRec').disabled=true}
+async function recStart(){
+  R.mr=null;
+  if(!canRec||!$('chkRec').checked)return;
+  try{
+    if(!R.stream||!R.stream.active)R.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+    if(!S.running)return;
+    const mime=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(m=>MediaRecorder.isTypeSupported(m))||'';
+    R.mr=new MediaRecorder(R.stream,mime?{mimeType:mime}:undefined);R.chunks=[];R.who=$('selWho').value;
+    R.mr.ondataavailable=e=>{if(e.data.size)R.chunks.push(e.data)};
+    R.mr.onstop=saveTake;
+    R.mr.start(1000);R.t0=Date.now();R.marks=[{i:S.idx,at:R.t0}];$('recdot').classList.add('on');
+  }catch(err){const w=$('warn');w.style.display='block';w.textContent='녹음을 시작하지 못했어요. 마이크 허용을 확인하세요. (음성 확인은 계속돼요)'}
+}
+function recMark(i){if(R.mr&&R.mr.state==='recording')R.marks.push({i,at:Date.now()})}
+function recStop(){$('recdot').classList.remove('on');if(R.mr&&R.mr.state!=='inactive'){R.endAt=Date.now();R.mr.stop()}}
+function saveTake(){
+  if(!R.chunks.length)return;
+  const blob=new Blob(R.chunks,{type:R.mr.mimeType||'audio/webm'});R.chunks=[];
+  const end=R.endAt||Date.now();const d=new Date(R.t0);const pad=x=>String(x).padStart(2,'0');
+  const ext=blob.type.includes('mp4')?'m4a':'webm';
+  const name=`WindLight_연습_${R.who==='All'?'전체':R.who}_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}.${ext}`;
+  const segs=R.marks.map((m,k)=>({i:m.i,s:(m.at-R.t0)/1000,e:((R.marks[k+1]?R.marks[k+1].at:end)-R.t0)/1000}));
+  R.takes.unshift({no:++R.n,url:URL.createObjectURL(blob),name,len:Math.round((end-R.t0)/1000),who:R.who,time:`${pad(d.getHours())}:${pad(d.getMinutes())}`,segs});
+  while(R.takes.length>5)URL.revokeObjectURL(R.takes.pop().url);
+  renderTakes();
+}
+function fixDur(a){ // 브라우저 녹음 파일은 길이 정보가 없어 앞뒤로 옮기기 위해 한 번 끝까지 훑음
+  if(a.dataset.fixed)return Promise.resolve();
+  return new Promise(res=>{const go=()=>{if(a.duration===Infinity||isNaN(a.duration)){a.currentTime=1e101;a.addEventListener('timeupdate',function f(){a.removeEventListener('timeupdate',f);a.currentTime=0;a.dataset.fixed=1;res()})}else{a.dataset.fixed=1;res()}};
+    if(a.readyState>=1)go();else a.addEventListener('loadedmetadata',go,{once:true})});
+}
+function renderTakes(){
+  const box=$('takes');
+  if(!R.takes.length){box.textContent='연습을 시작하면 녹음이 여기에 쌓여요.';return}
+  box.innerHTML=R.takes.map((t,k)=>`<div class="take"><div class="row"><b style="color:var(--navy)">#${t.no} · ${t.time} · ${esc(NAMES[t.who]||'전체')}</b><span>${Math.floor(t.len/60)}분 ${t.len%60}초</span></div>
+    <audio controls preload="metadata" src="${t.url}" id="aud${k}"></audio>
+    <div class="row"><a href="${t.url}" download="${esc(t.name)}">⬇ 파일로 저장</a>${k===0?'<span>결과 표에서 줄별로 들을 수 있어요</span>':''}</div></div>`).join('')+
+    '<p style="margin:8px 0 0;font-size:12px">녹음은 이 화면에만 있어요. 새로고침하거나 창을 닫으면 사라지니, 남기려면 [파일로 저장]을 누르세요. 최근 5개까지 보여요.</p>';
+  box.querySelectorAll('audio').forEach(a=>a.addEventListener('play',()=>fixDur(a),{once:true}));
+  document.querySelectorAll('.lbtn').forEach(b=>{const ok=R.takes[0].segs.some(x=>x.i===+b.dataset.play&&x.e-x.s>0.3);b.disabled=!ok;b.title=ok?'':'녹음 안 된 줄'});
+}
+async function playLine(i,btn){
+  const t=R.takes[0];if(!t)return;const a=$('aud0');
+  const segs=t.segs.filter(x=>x.i===i&&x.e-x.s>0.3);if(!segs.length)return;
+  const g=segs[segs.length-1];
+  document.querySelectorAll('.lbtn.playing').forEach(b=>{b.classList.remove('playing');b.textContent='▶ 듣기'});
+  if(R.seg&&R.seg.btn===btn&&!a.paused){a.pause();R.seg=null;return}
+  await fixDur(a);a.currentTime=g.s;R.seg={end:g.e,btn};btn.classList.add('playing');btn.textContent='■ 멈춤';
+  a.ontimeupdate=()=>{if(R.seg&&a.currentTime>=R.seg.end){a.pause()}};
+  a.onpause=()=>{if(R.seg){R.seg.btn.classList.remove('playing');R.seg.btn.textContent='▶ 듣기';R.seg=null}};
+  a.play();
+}
+
+// ───── 타이머 ─────
+setInterval(()=>{if(!S.running)return;const s=Math.floor((Date.now()-S.startT)/1000);$('timer').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')} / 3:00`;$('timer').classList.toggle('over',s>180)},250);
+
+function start(){
+  S.running=true;S.micWanted=true;S.results={};S.startT=Date.now();$('result').style.display='none';
+  ['btnMic','btnRetry','btnPrev','btnNext','btnEnd'].forEach(b=>$(b).disabled=false);
+  $('btnStart').textContent='■ 처음부터 다시';$('btnMic').textContent='마이크 끄기';
+  const first=SCRIPT.findIndex(mine);go(0);
+  if(mine(SCRIPT[0])||!$('chkTTS').checked)startRec();
+  if(first<0)go(0);
+  recStart();
+}
+function stop(){S.running=false;S.micWanted=false;stopRec();recStop();if('speechSynthesis' in window)stopSpeak();
+  ['btnMic','btnRetry','btnPrev','btnNext','btnEnd'].forEach(b=>$(b).disabled=true);$('btnStart').textContent='▶ 연습 시작';renderLine()}
+
+function finish(){
+  const total=Math.round((Date.now()-S.startT)/1000);stop();
+  const pass=+$('rngPass').value;const rows=SCRIPT.map((l,i)=>({l,r:S.results[i]})).filter(x=>mine(x.l));
+  const done=rows.filter(x=>x.r);const avg=done.length?Math.round(done.reduce((a,x)=>a+x.r.best,0)/done.length):0;
+  const weak=rows.filter(x=>!x.r||x.r.best<pass);
+  const miss={};done.forEach(x=>x.r.missed.forEach(w=>{w=w.replace(/[^\w]/g,'');if(w)miss[w]=(miss[w]||0)+1}));
+  const topMiss=Object.entries(miss).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  $('result').style.display='block';
+  $('result').innerHTML=`<h2 style="margin:0 0 8px;font:800 24px 'Baloo 2','Noto Sans KR'">결과 · ${esc(NAMES[$('selWho').value]||'전체')}</h2>
+  <p style="margin:0 0 8px">평균 정확도 <b class="big">${avg}%</b> · 걸린 시간 <b>${Math.floor(total/60)}분 ${total%60}초</b> ${total>180?'<span style="color:var(--bad)">(3분 초과)</span>':'(3분 안)'} · 통과 ${done.length-weak.filter(x=>x.r).length}/${rows.length}줄</p>
+  ${topMiss.length?`<p style="margin:0 0 8px">자주 빠진 단어: ${topMiss.map(([w,c])=>`<span class="pill">${esc(w)} ×${c}</span>`).join('')}</p>`:''}
+  <table><thead><tr><th>#</th><th>대사</th><th class="n">점수</th><th class="n">횟수</th><th class="n">녹음</th></tr></thead><tbody>
+  ${rows.map(x=>`<tr><td>${x.l.id+1}</td><td>${esc(x.l.en.replace(/\{\w+\}/g,'[ ]').slice(0,70))}…</td><td class="n" style="color:${x.r&&x.r.best>=pass?'var(--ok)':'var(--bad)'}">${x.r?x.r.best+'%':'안 읽음'}</td><td class="n">${x.r?x.r.tries:0}</td><td class="n">${R.mr?`<button class="lbtn" data-play="${x.l.id}" disabled>▶ 듣기</button>`:''}</td></tr>`).join('')}
+  </tbody></table>`;
+  renderList();$('result').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ───── 이벤트 ─────
+$('result').addEventListener('click',e=>{const b=e.target.closest('[data-play]');if(b)playLine(+b.dataset.play,b)});
+function countdown(){
+  const box=$('count'),num=$('countNum'),msg=$('countMsg');let n=3;
+  ['btnStart'].forEach(b=>$(b).disabled=true);box.classList.add('show');
+  const tick=()=>{
+    num.classList.remove('pop');void num.offsetWidth;num.classList.add('pop');
+    if(n>0){num.textContent=n;msg.textContent='준비하세요!';n--;setTimeout(tick,1000)}
+    else{num.textContent='시작!';msg.textContent='첫 대사를 말하세요';setTimeout(()=>{box.classList.remove('show');$('btnStart').disabled=false;start()},600)}
+  };
+  tick();
+}
+$('btnStart').onclick=()=>{if(S.running)stop();countdown()};
+$('btnMic').onclick=()=>{if(S.listening||S.micWanted){S.micWanted=false;stopRec();$('btnMic').textContent='마이크 켜기'}else{S.micWanted=true;startRec();$('btnMic').textContent='마이크 끄기'}renderLine()};
+$('btnRetry').onclick=()=>{if(!mine(SCRIPT[S.idx])){if($('chkTTS').checked)speakLine();return}record();S.heardFinal='';S.heardInterim='';S.lineT=Date.now();renderLine()};
+$('btnNext').onclick=()=>next();
+$('btnPrev').onclick=()=>go(S.idx-1);
+$('btnEnd').onclick=()=>{record();finish()};
+$('rngPass').oninput=()=>{$('passVal').textContent=$('rngPass').value;renderList()};
+const syncTTS=()=>{$('ttsBox').style.display=$('chkTTS').checked?'block':'none'};
+$('chkTTS').onchange=()=>{syncTTS();if(S.running&&!mine(SCRIPT[S.idx])){if($('chkTTS').checked)speakLine();else{stopSpeak();renderLine()}}};
+$('rngRate').oninput=()=>{$('rateVal').textContent=(+$('rngRate').value).toFixed(2).replace(/0$/,'')};
+$('selWho').onchange=()=>{$('chkTTS').checked=$('selWho').value!=='All';syncTTS();if(S.running)stop();renderLine();renderList()};
+$('list').onclick=e=>{const d=e.target.closest('.li');if(d){record();go(+d.dataset.i);if(S.running&&mine(SCRIPT[S.idx]))startRec()}};
+$('list').onkeydown=e=>{if(e.key==='Enter'){const d=e.target.closest('.li');if(d)go(+d.dataset.i)}};
+document.addEventListener('keydown',e=>{if(!S.running||e.target.matches('input,select'))return;if(e.key==='ArrowRight')next();if(e.key==='ArrowLeft')go(S.idx-1)});
+renderLine();renderList();
+}
+</script>
+</body>
+</html>
